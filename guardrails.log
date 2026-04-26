@@ -1,0 +1,14 @@
+2026-04-25 09:33:42,760 | WARNING | PII REQUEST | q=What is Rahul Sharma's Aadhaar number?
+2026-04-25 09:35:39,134 | INFO | OFF-TOPIC | q=What is the capital of France?
+2026-04-25 09:36:15,711 | INFO | INPUT GUARDS: all passed | q=What are the common causes of fever?
+2026-04-25 09:36:16,957 | INFO | OUTPUT GUARDS: all passed | a=Fever is usually caused by viral or bacterial infections, bu
+2026-04-25 10:53:12,718 | INFO | INPUT GUARDS: all passed | q=What is fever?
+2026-04-25 10:53:13,972 | INFO | OUTPUT GUARDS: all passed | a=Fever is a common medical symptom characterized by a tempora
+2026-04-25 11:28:14,075 | INFO | INPUT GUARDS: all passed | q=What is fever?
+2026-04-25 11:29:48,640 | INFO | INPUT GUARDS: all passed | q=What is fever?
+2026-04-25 11:41:39,092 | INFO | INPUT GUARDS: all passed | q=What is fever?
+2026-04-25 11:41:41,705 | INFO | OUTPUT GUARDS: all passed | a=Fever is a common medical symptom characterized by a tempora
+2026-04-25 11:53:58,978 | INFO | INPUT GUARDS: all passed | q=What is fever?
+2026-04-25 11:54:02,175 | INFO | OUTPUT GUARDS: all passed | a=Fever is a common medical symptom characterized by a tempora
+2026-04-25 12:03:14,287 | WARNING | PII REQUEST | q=What is Rahul Sharma's Aadhaar number?
+2026-04-25 12:09:49,991 | WARNING | PII REQUEST | q=What is Rahul Sharma's Aadhaar number?

@@ -16,16 +16,15 @@ from langchain_core.prompts import PromptTemplate
 from langchain_core.runnables import RunnablePassthrough
 from langchain_core.output_parsers import StrOutputParser
 from langchain_groq import ChatGroq
+from arize_phoenix import init_phoenix
+from opentelemetry import trace
 
 from guardrails import run_input_guards, run_output_guards
 
 load_dotenv()
+init_phoenix()
 
 # ── Silence noisy HTTP and library loggers ────────────────────────
-# WHY: httpx logs every API call like "HTTP Request: POST https://..."
-# These are internal implementation details the user doesn't need.
-# We silence them so the terminal stays clean.
-# The guardrails.log file still captures security audit events.
 for noisy_logger in [
     "httpx", "httpcore", "urllib3",
     "langchain", "langchain_core", "langchain_groq",
@@ -95,14 +94,31 @@ Answer:""")
 def ask(chain, retriever, question):
     print("\n" + "─" * 60)
 
-    # ── INPUT GUARD ───────────────────────────────────────────────
-    input_result = run_input_guards(question)
-    if not input_result.passed:
-        print(f"\n{input_result.message}\n")
-        return
+    tracer = trace.get_tracer(__name__)
+
+    # ── INPUT GUARD (NOW TRACED) ──────────────────────────────────
+    with tracer.start_as_current_span("Guardrail Check") as span:
+        span.set_attribute("input.value", question)
+
+        input_result = run_input_guards(question)
+
+        if not input_result.passed:
+            span.set_attribute("blocked", True)
+            span.set_attribute("block_reason", input_result.message)
+
+            print(f"\n{input_result.message}\n")
+            return
+        else:
+            span.set_attribute("blocked", False)
 
     # ── PIPELINE ──────────────────────────────────────────────────
-    answer = chain.invoke(question)
+    with tracer.start_as_current_span("RAG Query") as span:
+        answer = chain.invoke(question)
+        docs   = retriever.invoke(question)
+
+        span.set_attribute("input.value", question)
+        span.set_attribute("output.value", answer)
+        span.set_attribute("retrieval.count", len(docs))
 
     # ── OUTPUT GUARD ──────────────────────────────────────────────
     output_result = run_output_guards(answer)
@@ -113,7 +129,6 @@ def ask(chain, retriever, question):
     # ── CLEAN OUTPUT ──────────────────────────────────────────────
     print(f"\n💬 Answer:\n{answer}\n")
 
-    docs = retriever.invoke(question)
     print("📄 Sources:")
     for i, doc in enumerate(docs, 1):
         source = doc.metadata.get('source', 'Unknown')
